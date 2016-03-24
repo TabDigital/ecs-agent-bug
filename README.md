@@ -34,7 +34,7 @@ Then it's a 2 step process:
 - deploy the specified tag range
 
 ```bash
-./deploy --cluster ecs-bug --image tuhcijzz0qwisw --tags 1:10
+./deploy --cluster ecs-bug --image foo --tags 1:10
 ```
 
 You can then run several `deploy` commands in parallel on different images.

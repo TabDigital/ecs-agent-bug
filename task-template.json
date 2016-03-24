@@ -8,8 +8,6 @@
       "disableNetworking": false,
       "dnsSearchDomains": [],
       "essential": true,
-      "entryPoint": ["/bin/sh"],
-      "command": ["sh", "-c", "read"],
       "mountPoints": [],
       "name": "myimage",
       "ulimits": [],
@@ -28,6 +26,5 @@
       "privileged": false
     }
   ],
-  "volumes": [],
-  "family": "small-alpine-test"
+  "volumes": []
 }

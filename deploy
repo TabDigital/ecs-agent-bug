@@ -69,4 +69,7 @@ for tag in `seq ${from} ${to}`; do
     echo Created service ${service_arn} with task ${task_arn}
   fi
 
+  # wait for the deployment to finish
+  aws ecs wait services-stable --cluster ${cluster} --services ${image}
+
 done

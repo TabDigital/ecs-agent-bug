@@ -34,7 +34,15 @@ Then it's a 2 step process:
 - deploy the specified tag range
 
 ```bash
-./deploy --cluster ecs-bug --image foo --tags 1:10
+./deploy --cluster test --image foo --tags 1:10
 ```
 
 You can then run several `deploy` commands in parallel on different images.
+
+### 3. Stopping the test
+
+When you're finished, you can run this to stop all services & deployments.
+
+```bash
+./stop --cluster test --image foo
+```

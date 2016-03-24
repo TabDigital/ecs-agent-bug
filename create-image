@@ -1,0 +1,59 @@
+#!/bin/bash -e
+
+function usage {
+  echo "Usage: create-image --name foo --tags 1:10"
+  exit 1
+}
+
+while [ $# -gt 0 ]; do
+  case $1 in
+      --name) shift; name="$1"; shift;;
+      --tags) shift; tags="$1"; shift;;
+      *) usage;;
+  esac
+done
+
+if [ -z "${name}" ]; then
+  name=$(cat /dev/random | head -c 10 | base64 | sed 's/[^a-zA-Z0-9]//g' | tr '[A-Z]' '[a-z]')
+fi
+
+if [ -z "${tags}" ]; then
+  from=1
+  to=10
+else
+  from=$(echo ${tags} | cut -f 1 -d:)
+  to=$(echo ${tags} | cut -f 2 -d:)
+fi
+
+echo Creating image ${name} with tags ${from}..${to}
+
+# start fresh
+mkdir -p tmp
+
+# create the repository
+registry_id=$(aws ecr describe-repositories --repository-name ${name} | jq -r .repositories[0].registryId)
+if [ -z "${registry_id}" ]; then
+  echo Creating ECR repository ${name}
+  result=$(aws ecr create-repository --repository-name ${name})
+  registry_id=$(echo "${result}" | jq -r .repository.registryId)
+else
+  echo Found existing ECR repository ${name}
+fi
+
+# full registry URL
+registry=${registry_id}.dkr.ecr.us-east-1.amazonaws.com
+
+# create and push images
+trap 'break' SIGINT
+for tag in `seq ${from} ${to}`; do
+
+  # build the image
+  echo Creating Docker image ${registry}/${name}:${tag}
+  echo ${tag} > image/tag.txt
+  docker build --tag ${registry}/${name}:${tag} image
+
+  # push the image
+  echo Pushing Docker image ${registry}/${name}:${tag}
+  docker push ${registry}/${name}:${tag}
+
+done

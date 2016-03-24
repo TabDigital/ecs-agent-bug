@@ -1,0 +1,33 @@
+{
+  "containerDefinitions": [
+    {
+      "volumesFrom": [],
+      "memory": 128,
+      "extraHosts": [],
+      "dnsServers": [],
+      "disableNetworking": false,
+      "dnsSearchDomains": [],
+      "essential": true,
+      "entryPoint": ["/bin/sh"],
+      "command": ["sh", "-c", "read"],
+      "mountPoints": [],
+      "name": "myimage",
+      "ulimits": [],
+      "dockerSecurityOptions": [],
+      "environment": [],
+      "links": [],
+      "workingDirectory": "/",
+      "readonlyRootFilesystem": false,
+      "image": "%DOCKER_IMAGE%",
+      "dockerLabels": {},
+      "logConfiguration": {
+        "logDriver": "json-file",
+        "options": {}
+      },
+      "cpu": 128,
+      "privileged": false
+    }
+  ],
+  "volumes": [],
+  "family": "small-alpine-test"
+}

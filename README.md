@@ -5,6 +5,15 @@ Trying to reproduce a bug on `ECS` where the agent becomes slow and times out.
 
 ### Initial setup
 
+You will need
+
+- an ECS cluster
+- at least 1 EC2 instance in the cluster
+- the instance role to have the appropriate policies, including access to ECR 
+
+
+Then in your terminal
+
 ```bash
 # setup aws access
 export AWS_DEFAULT_PROFILE=digital-tools
@@ -12,7 +21,8 @@ export AWS_DEFAULT_REGION=us-east-1
 eval $(aws ecr get-login)
 ```
 
-Then it's a 2 step process:
+The actual test is a 2 step process
+
 - generate lots of different images on ECR
 - run many deployments in parallel using the images above
 

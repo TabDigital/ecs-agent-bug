@@ -9,7 +9,7 @@ You will need
 
 - an ECS cluster
 - at least 1 EC2 instance in the cluster
-- the instance role to have the appropriate policies, including access to ECR 
+- the instance role to have the appropriate policies, including access to ECR
 
 
 Then in your terminal
@@ -37,6 +37,8 @@ The actual test is a 2 step process
 # if no name specified, creates a random name
 # if no tag range specified, creates 10 tags
 ```
+
+*current limitation: you cannot run multiple `create-image` in parallel*
 
 ### 2. Deploying
 

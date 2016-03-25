@@ -36,5 +36,5 @@ fi
 registry=${registry_id}.dkr.ecr.us-east-1.amazonaws.com
 
 # stop runnins this service
-aws ecs update-service --cluster ${cluster} --service ${image} --desired-count 0 >> tmp/stop.json
+aws ecs update-service --cluster ${cluster} --service ${image} --desired-count 0 >> tmp/aws-stop-${image}.json
 aws ecs wait services-stable --cluster ${cluster} --services ${image}

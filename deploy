@@ -51,9 +51,9 @@ for tag in `seq ${from} ${to}`; do
 
   # create a new task definition
   echo Creating task definition
-  sed "s|%DOCKER_IMAGE%|${registry}/${image}:${tag}|" task-template.json > tmp/task.json
-  aws ecs register-task-definition --family ${image} --cli-input-json file://$(pwd)/tmp/task.json > tmp/aws-task-${tag}.json
-  task_arn=$(cat tmp/aws-task-${tag}.json | jq -r .taskDefinition.taskDefinitionArn)
+  sed "s|%DOCKER_IMAGE%|${registry}/${image}:${tag}|" task-template.json > tmp/taskdef-${image}-${tag}.json
+  aws ecs register-task-definition --family ${image} --cli-input-json file://$(pwd)/tmp/taskdef-${image}-${tag}.json > tmp/aws-task-${image}-${tag}.json
+  task_arn=$(cat tmp/aws-task-${image}-${tag}.json | jq -r .taskDefinition.taskDefinitionArn)
   echo Created task definition ${task_arn}
 
   # create or update the service
@@ -61,13 +61,13 @@ for tag in `seq ${from} ${to}`; do
 
   if [ "${status}" = "ACTIVE" ]; then
     echo "Updating service"
-    aws ecs update-service --cluster ${cluster} --service ${image} --task-definition ${task_arn} --desired-count 1  > tmp/aws-service-${tag}.json
-    service_arn=$(cat tmp/aws-service-${tag}.json | jq -r .service.serviceArn)
+    aws ecs update-service --cluster ${cluster} --service ${image} --task-definition ${task_arn} --desired-count 1  > tmp/aws-service-${image}-${tag}.json
+    service_arn=$(cat tmp/aws-service-${image}-${tag}.json | jq -r .service.serviceArn)
     echo Updated service ${service_arn} to use task ${task_arn}
   else
     echo "Creating service"
-    aws ecs create-service --cluster ${cluster} --service-name ${image} --task-definition ${task_arn} --desired-count 1  > tmp/aws-service-${tag}.json
-    service_arn=$(cat tmp/aws-service-${tag}.json | jq -r .service.serviceArn)
+    aws ecs create-service --cluster ${cluster} --service-name ${image} --task-definition ${task_arn} --desired-count 1  > tmp/aws-service-${image}-${tag}.json
+    service_arn=$(cat tmp/aws-service-${image}-${tag}.json | jq -r .service.serviceArn)
     echo Created service ${service_arn} with task ${task_arn}
   fi
 

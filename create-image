@@ -25,10 +25,9 @@ else
   to=$(echo ${tags} | cut -f 2 -d:)
 fi
 
-echo Creating image ${name} with tags ${from}..${to}
-
-# start fresh
+# let's go
 mkdir -p tmp
+echo Creating image ${name} with tags ${from}..${to}
 
 # create the repository
 registry_id=$(aws ecr describe-repositories --repository-name ${name} | jq -r .repositories[0].registryId)

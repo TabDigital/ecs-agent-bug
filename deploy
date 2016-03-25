@@ -30,6 +30,8 @@ else
   to=$(echo ${tags} | cut -f 2 -d:)
 fi
 
+# let's go
+mkdir -p tmp
 echo Deploying image ${image} with tags ${from}..${to}
 
 # make sure the repository exists

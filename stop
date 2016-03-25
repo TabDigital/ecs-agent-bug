@@ -21,6 +21,8 @@ if [ -z "${image}" ]; then
   usage
 fi
 
+# let's go
+mkdir -p tmp
 echo Stopping deployments for image ${image}
 
 # make sure the repository exists

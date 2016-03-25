@@ -38,8 +38,6 @@ The actual test is a 2 step process
 # if no tag range specified, creates 10 tags
 ```
 
-*current limitation: you cannot run multiple `create-image` in parallel*
-
 ### 2. Deploying
 
 - create a service based on the image above

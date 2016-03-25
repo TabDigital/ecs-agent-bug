@@ -1,3 +1,3 @@
 FROM busybox
-ADD tag.txt /tag.txt
+RUN echo %TAG% > /tag.txt
 CMD ["sleep", "3600"]

@@ -48,8 +48,7 @@ for tag in `seq ${from} ${to}`; do
 
   # build the image
   echo Creating Docker image ${registry}/${name}:${tag}
-  echo ${tag} > image/tag.txt
-  docker build --tag ${registry}/${name}:${tag} image
+  sed "s/%TAG%/${tag}/" templates/Dockerfile | docker build --tag ${registry}/${name}:${tag} -
 
   # push the image
   echo Pushing Docker image ${registry}/${name}:${tag}

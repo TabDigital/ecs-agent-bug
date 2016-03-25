@@ -51,7 +51,7 @@ for tag in `seq ${from} ${to}`; do
 
   # create a new task definition
   echo Creating task definition
-  sed "s|%DOCKER_IMAGE%|${registry}/${image}:${tag}|" task-template.json > tmp/taskdef-${image}-${tag}.json
+  sed "s|%DOCKER_IMAGE%|${registry}/${image}:${tag}|" templates/task-template.json > tmp/taskdef-${image}-${tag}.json
   aws ecs register-task-definition --family ${image} --cli-input-json file://$(pwd)/tmp/taskdef-${image}-${tag}.json > tmp/aws-task-${image}-${tag}.json
   task_arn=$(cat tmp/aws-task-${image}-${tag}.json | jq -r .taskDefinition.taskDefinitionArn)
   echo Created task definition ${task_arn}

@@ -9,7 +9,7 @@ You will need
 
 - an ECS cluster
 - at least 1 EC2 instance in the cluster
-- the instance role to have the appropriate policies, including access to ECR
+- the instance role to have the appropriate policies (typically `AmazonEC2ContainerServiceforEC2Role`).
 
 
 Then in your terminal

@@ -20,7 +20,7 @@ In your terminal:
 export AWS_DEFAULT_PROFILE=digital-tools    # as defined in ~/.aws
 export AWS_DEFAULT_REGION=ap-southeast-2    # target AWS region
 
-./loop --cluster ecs-bug
+./loop --cluster test
 ```
 
 This will create all services listed in [services](services),
@@ -50,5 +50,5 @@ You can quickly stop all services using:
 
 ```bash
 # sets desired_count = 0
-./stop --cluster ecs-bug
+./stop --cluster test
 ```

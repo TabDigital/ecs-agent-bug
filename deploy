@@ -7,8 +7,10 @@ EOF)"
 mkdir -p tmp
 echo [${service}] starting deployment...
 
+# deploy all available images in a loop
 while true; do
 
+  # for each available image/tag
   cat services/${service} | while read image; do
 
     echo [${service}] deploying ${image}

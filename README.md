@@ -1,7 +1,7 @@
 
-# ecs-bug
+# ecs-slowdown
 
-Trying to reproduce a bug on `ECS` where the agent becomes slow and times out.
+Trying to reproduce an issue on `ECS` where the agent becomes slow and times out.
 
 ## Initial setup
 
@@ -12,7 +12,7 @@ You will need
   * running *Amazon Linux AMI 2015.09.g x86_64 ECS HVM GP2* (`ami-7d9bbd1e`)
   * whose instance role includes the `AmazonEC2ContainerServiceforEC2Role` policy
 
-## Reproducing the bug
+## Reproducing the issue
 
 In your terminal:
 

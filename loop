@@ -1,20 +1,8 @@
 #!/bin/bash
 
-function usage {
-  echo "Usage: loop --cluster test"
-  exit 1
-}
-
-while [ $# -gt 0 ]; do
-  case $1 in
-      --cluster) shift; cluster="$1"; shift;;
-      *) usage;;
-  esac
-done
-
-if [ -z "${cluster}" ]; then
-  usage
-fi
+eval "$(./docopts -h - : "$@" <<EOF
+Usage: loop --cluster=<name>
+EOF)"
 
 find services -type f \
   | cut -d"/" -f 2 \

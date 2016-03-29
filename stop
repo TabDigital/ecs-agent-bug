@@ -1,20 +1,8 @@
 #!/bin/bash
 
-function usage {
-  echo "Usage: stop --cluster test"
-  exit 1
-}
-
-while [ $# -gt 0 ]; do
-  case $1 in
-      --cluster) shift; cluster="$1"; shift;;
-      *) usage;;
-  esac
-done
-
-if [ -z "${cluster}" ]; then
-  usage
-fi
+eval "$(./docopts -h - : "$@" <<EOF
+Usage: stop --cluster=<name>
+EOF)"
 
 mkdir -p tmp
 

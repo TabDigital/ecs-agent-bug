@@ -44,4 +44,11 @@ sys   0m0.012s
 ```
 
 You might get 1 slow command following by 10 fast ones. Just keep trying to call `docker ps`.
-Note that even after stopping all services (`desired count = 0`), the command is still slow.
+Note that even after stopping all services, the command is still slow.
+
+You can quickly stop all services using:
+
+```bash
+# sets desired_count = 0
+./stop --cluster ecs-bug
+```

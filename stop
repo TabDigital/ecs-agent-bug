@@ -1,14 +1,13 @@
 #!/bin/bash
 
 function usage {
-  echo "Usage: stop --cluster test --image foo"
+  echo "Usage: stop --cluster test"
   exit 1
 }
 
 while [ $# -gt 0 ]; do
   case $1 in
       --cluster) shift; cluster="$1"; shift;;
-      --image) shift; image="$1"; shift;;
       *) usage;;
   esac
 done
@@ -17,24 +16,13 @@ if [ -z "${cluster}" ]; then
   usage
 fi
 
-if [ -z "${image}" ]; then
-  usage
-fi
-
-# let's go
 mkdir -p tmp
-echo Stopping deployments for image ${image}
 
-# make sure the repository exists
-registry_id=$(aws ecr describe-repositories --repository-name ${image} | jq -r .repositories[0].registryId)
-if [ -z "${registry_id}" ]; then
-  echo ECR repository not found: ${image}
-  exit 1
-fi
+services=$(find services -type f | cut -d"/" -f 2)
+echo "$services" | while read service; do
+  echo [${service}] stopping
+  aws ecs update-service --cluster ${cluster} --service ${service} --desired-count 0 > tmp/aws-service-${service}.json
+  echo [${service}] stopped
+done
 
-# full registry URL
-registry=${registry_id}.dkr.ecr.us-east-1.amazonaws.com
-
-# stop runnins this service
-aws ecs update-service --cluster ${cluster} --service ${image} --desired-count 0 >> tmp/aws-stop-${image}.json
-aws ecs wait services-stable --cluster ${cluster} --services ${image}
+echo Done

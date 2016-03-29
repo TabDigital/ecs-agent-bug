@@ -5,13 +5,6 @@ function usage {
   exit 1
 }
 
-function abort {
-  aborting=true
-  echo [${service}] aborting deployment
-}
-
-trap abort SIGINT SIGTERM
-
 while [ $# -gt 0 ]; do
   case $1 in
       --cluster) shift; cluster="$1"; shift;;
@@ -31,11 +24,9 @@ fi
 mkdir -p tmp
 echo [${service}] starting deployment...
 
-while [ -z "${aborting}" ]; do
+while true; do
 
   cat services/${service} | while read image; do
-
-    if [ "${aborting}" ]; then break; fi
 
     echo [${service}] deploying ${image}
 

@@ -3,56 +3,45 @@
 
 Trying to reproduce a bug on `ECS` where the agent becomes slow and times out.
 
-### Initial setup
+## Initial setup
 
 You will need
 
 - an ECS cluster
 - at least 1 EC2 instance in the cluster
-- the instance role to have the appropriate policies (typically `AmazonEC2ContainerServiceforEC2Role`).
+  * running *Amazon Linux AMI 2015.09.g x86_64 ECS HVM GP2* (`ami-7d9bbd1e`)
+  * whose instance role includes the `AmazonEC2ContainerServiceforEC2Role` policy
 
+## Reproducing the bug
 
-Then in your terminal
-
-```bash
-# setup aws access
-export AWS_DEFAULT_PROFILE=digital-tools
-export AWS_DEFAULT_REGION=us-east-1
-eval $(aws ecr get-login)
-```
-
-The actual test is a 2 step process
-
-- generate lots of different images on ECR
-- run many deployments in parallel using the images above
-
-### 1. Creating images
-
-- creates an ECR repository, if required
-- pushes many tags to it (busybox, 1Mb each)
+In your terminal:
 
 ```bash
-./create-image --name foo --tags 1:10
+export AWS_DEFAULT_PROFILE=digital-tools    # as defined in ~/.aws
+export AWS_DEFAULT_REGION=ap-southeast-2    # target AWS region
 
-# if no name specified, creates a random name
-# if no tag range specified, creates 10 tags
+./loop --cluster ecs-bug
 ```
 
-### 2. Deploying
+This will create all services listed in [services](services),
+and cycle through the images as quickly as possible (waiting for each deployment to be stable).
 
-- create a service based on the image above
-- deploy the specified tag range
+While this is running, hop on to the `EC2` instance
 
 ```bash
-./deploy --cluster test --image foo --tags 1:10
+# at first, most Docker commands only take a few milliseconds
+[ec2-user@ip-0-0-0-0 ~]$ time docker ps
+real  0m0.033s
+user  0m0.024s
+sys   0m0.008s
+
+# give it 15min or so
+# and some calls will randomly take a long time to execute
+[ec2-user@ip-0-0-0-0 ~]$ time docker ps
+real  0m38.700s
+user  0m0.020s
+sys   0m0.012s
 ```
 
-You can then run several `deploy` commands in parallel on different images.
-
-### 3. Stopping the test
-
-When you're finished, you can run this to stop all services & deployments.
-
-```bash
-./stop --cluster test --image foo
-```
+You might get 1 slow command following by 10 fast ones. Just keep trying to call `docker ps`.
+Note that even after stopping all services (`desired count = 0`), the command is still slow.

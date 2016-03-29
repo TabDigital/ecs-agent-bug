@@ -1,15 +1,21 @@
-#!/bin/bash
+#!/bin/bash -e
 
 function usage {
-  echo "Usage: deploy --cluster test --image foo --tags 1:10"
+  echo "Usage: deploy --cluster test --service foo"
   exit 1
 }
+
+function abort {
+  aborting=true
+  echo [${service}] aborting deployment
+}
+
+trap abort SIGINT SIGTERM
 
 while [ $# -gt 0 ]; do
   case $1 in
       --cluster) shift; cluster="$1"; shift;;
-      --image) shift; image="$1"; shift;;
-      --tags) shift; tags="$1"; shift;;
+      --service) shift; service="$1"; shift;;
       *) usage;;
   esac
 done
@@ -18,60 +24,52 @@ if [ -z "${cluster}" ]; then
   usage
 fi
 
-if [ -z "${image}" ]; then
+if [ -z "${service}" ]; then
   usage
 fi
 
-if [ -z "${tags}" ]; then
-  from=1
-  to=10
-else
-  from=$(echo ${tags} | cut -f 1 -d:)
-  to=$(echo ${tags} | cut -f 2 -d:)
-fi
-
-# let's go
 mkdir -p tmp
-echo Deploying image ${image} with tags ${from}..${to}
+echo [${service}] starting deployment...
 
-# make sure the repository exists
-registry_id=$(aws ecr describe-repositories --repository-name ${image} | jq -r .repositories[0].registryId)
-if [ -z "${registry_id}" ]; then
-  echo ECR repository not found: ${image}
-  exit 1
-fi
+while [ -z "${aborting}" ]; do
 
-# full registry URL
-registry=${registry_id}.dkr.ecr.us-east-1.amazonaws.com
+  cat services/${service} | while read image; do
 
-trap 'break' SIGINT
-for tag in `seq ${from} ${to}`; do
+    if [ "${aborting}" ]; then break; fi
 
-  echo Deploying ${registry}/${image}:${tag}
+    echo [${service}] deploying ${image}
 
-  # create a new task definition
-  echo Creating task definition
-  sed "s|%DOCKER_IMAGE%|${registry}/${image}:${tag}|" templates/task-template.json > tmp/taskdef-${image}-${tag}.json
-  aws ecs register-task-definition --family ${image} --cli-input-json file://$(pwd)/tmp/taskdef-${image}-${tag}.json > tmp/aws-task-${image}-${tag}.json
-  task_arn=$(cat tmp/aws-task-${image}-${tag}.json | jq -r .taskDefinition.taskDefinitionArn)
-  echo Created task definition ${task_arn}
+    # create a new task definition
+    echo [${service}] creating task definition
+    sed "s|%DOCKER_IMAGE%|${image}|" task-template.json > tmp/task-${service}.json
+    aws ecs register-task-definition --family ${service} --cli-input-json file://$(pwd)/tmp/task-${service}.json > tmp/aws-task-${image}.json
+    task_arn=$(cat tmp/aws-task-${image}.json | jq -r .taskDefinition.taskDefinitionArn)
+    echo [${service}] created task definition ${task_arn}
 
-  # create or update the service
-  status=$(aws ecs describe-services --cluster ${cluster} --services ${image} | jq -r .services[0].status)
+    # create or update the service
+    status=$(aws ecs describe-services --cluster ${cluster} --services ${service} | jq -r .services[0].status)
 
-  if [ "${status}" = "ACTIVE" ]; then
-    echo "Updating service"
-    aws ecs update-service --cluster ${cluster} --service ${image} --task-definition ${task_arn} --desired-count 1  > tmp/aws-service-${image}-${tag}.json
-    service_arn=$(cat tmp/aws-service-${image}-${tag}.json | jq -r .service.serviceArn)
-    echo Updated service ${service_arn} to use task ${task_arn}
-  else
-    echo "Creating service"
-    aws ecs create-service --cluster ${cluster} --service-name ${image} --task-definition ${task_arn} --desired-count 1  > tmp/aws-service-${image}-${tag}.json
-    service_arn=$(cat tmp/aws-service-${image}-${tag}.json | jq -r .service.serviceArn)
-    echo Created service ${service_arn} with task ${task_arn}
-  fi
+    if [ "${status}" = "ACTIVE" ]; then
+      echo [${service}] updating existing service
+      aws ecs update-service --cluster ${cluster} --service ${service} --task-definition ${task_arn} --desired-count 1  > tmp/aws-service-${image}.json
+      service_arn=$(cat tmp/aws-service-${image}.json | jq -r .service.serviceArn)
+      echo [${service}] updated to use task ${task_arn}
+    else
+      echo [${service}] creating new service
+      aws ecs create-service --cluster ${cluster} --service-name ${service} --task-definition ${task_arn} --desired-count 1  > tmp/aws-service-${image}.json
+      service_arn=$(cat tmp/aws-service-${image}.json | jq -r .service.serviceArn)
+      echo [${service}] created with task ${task_arn}
+    fi
 
-  # wait for the deployment to finish
-  aws ecs wait services-stable --cluster ${cluster} --services ${image}
+    # wait for the deployment to finish
+    echo [${service}] waiting for deployment of ${image} to be stable
+    aws ecs wait services-stable --cluster ${cluster} --services ${service}
+
+    echo [${service}] deployment of ${image} is stable
+
+  done
 
 done
+
+echo [${service}] finished
+exit
